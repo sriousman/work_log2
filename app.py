@@ -41,6 +41,17 @@ Entries are displayed one at a time and can be paged through one by one
         self.title = 'All tasks'
         self.main_loop()
 
+    def decr_index(self):
+        if self.index == 0:
+            self.index = len(self.slist)-1
+        else:
+            self.index -= 1
+
+    def incr_index(self):
+        if self.index == len(self.slist)-1:
+            self.index = 0
+        else:
+            self.index += 1
 
     def main_loop(self):
         """The Program's main loop managing the screen printing and user interface.
@@ -49,7 +60,6 @@ Entries are displayed one at a time and can be paged through one by one
         title = 'All Tasks'
         while True:
             self.clear_screen()
-            self.save_tlist()
             self.print_screen()
             cmd = input("\nEnter a command: ").strip().lower()
 
@@ -64,13 +74,11 @@ Entries are displayed one at a time and can be paged through one by one
                     print("Try Again...")
                     return self.main_loop()
             elif cmd[0] == 'n':
-                self.index +=1
-                continue
+                self.incr_index()
             elif cmd[0] == 'p':
-                self.index -= 1
-                continue
+                self.decr_index()
             elif cmd[0] == 'e':
-                self.edit_task(self.current["id"])
+                self.edit_task()
             elif cmd[0] == 'q':
                     self.clear_screen()
                     self.save_log()
@@ -93,20 +101,20 @@ Entries are displayed one at a time and can be paged through one by one
             )
         print('--------------------------------------------------------------')
         print(
-                "{0!s:^60} ".format("MENU :\n"
+                "{0!s:^60} ".format("MENU :\n") +
                 ": a     -  Add a new task\n"
                 ": p     -  (p)revious task\n"
-                ": e     -  (e)dit task"
+                ": e     -  (e)dit task\n"
                 ": n     -  (n)ext task\n"
                 ": s     -  (s)elect current task by number"
                 ": q     -  (q)uit\n"
                 ": fn [term] -  Find by n where n is the search type\n"
                 "               and term is the search term.\n"
-                "\t\t 1 - date\t"
-                "\t\t 2 - name\n"
-                "\t\t 3 - duration\t"
-                "\t\t 4 - notes\n"
-                "\t\t 5 - regex pattern"
+                "n == 1 - date\t"
+                "2 - name\t"
+                "3 - duration\t"
+                "4 - notes\t"
+                "5 - regex pattern"
                 )
         print('--------------------------------------------------------------')
         print(
@@ -144,8 +152,9 @@ Entries are displayed one at a time and can be paged through one by one
                 return list(reader)
 
     def save_log(self):
-        with open(self.lfile, 'r') as csvfile:
+        with open(self.lfile, 'w') as csvfile:
             task_writer = csv.DictWriter(csvfile, fieldnames=self.fnames)
+            task_writer.writeheader()
             for task in self.tlist:
                 task_writer.writerow(task)
 
@@ -159,12 +168,12 @@ Entries are displayed one at a time and can be paged through one by one
                 )
         self.tlist.append(map(self.fnames, attrs))
 
-    def edit_task(self, id):
+    def edit_task(self):
         while True:
             ask = int(input(
                 "What would you like to edit?\n"
                 "(1) date (2) name (3) duration (4) notes:  "
-                ).strip().lower())
+                ).strip().lower())-1
             choices = ['date', 'name', 'duration', 'notes']
             self.current[choices[ask]] = input("Enter new {} data:".format(choices[ask]))
             again = input("Would you like to change something else? (y,n)")
@@ -173,6 +182,7 @@ Entries are displayed one at a time and can be paged through one by one
             if again == 'y':
                 self.edit_task()
             elif again == 'n':
+                self.tlist[self.index].update(self.slist[self.index])
                 break
             else:
                 print("failed")
@@ -194,9 +204,6 @@ Entries are displayed one at a time and can be paged through one by one
                     tasks.append(i)
         self.slist = [t[x] for t in self.tlist for x in tasks]
 
-
-    def save_tlist(self):
-        self.tlist = [s if t['id'] == s['id'] else t for t in self.tlist for s in self.slist]
 
     def print_tasks(self, title, fname):
         tasks = self.order_by(fname)
