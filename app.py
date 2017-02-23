@@ -44,11 +44,8 @@ Entries are displayed one at a time and can be paged through one by one
 
     def main_loop(self):
         """The Program's main loop managing the screen printing and user interface.
+            """
 
-            Variables:
-                index -- the index of the task currently selected for editing
-        """
-        index = 0
         title = 'All Tasks'
         while True:
             self.clear_screen()
@@ -67,10 +64,10 @@ Entries are displayed one at a time and can be paged through one by one
                     print("Try Again...")
                     return self.main_loop()
             elif cmd[0] == 'n':
-                index +=1
+                self.index +=1
                 continue
             elif cmd[0] == 'p':
-                index -= 1
+                self.index -= 1
                 continue
             elif cmd[0] == 'e':
                 self.edit_task(self.current["id"])
