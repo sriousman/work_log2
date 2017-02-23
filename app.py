@@ -57,7 +57,6 @@ Entries are displayed one at a time and can be paged through one by one
         """The Program's main loop managing the screen printing and user interface.
             """
 
-        title = 'All Tasks'
         while True:
             self.clear_screen()
             self.print_screen()
@@ -79,6 +78,8 @@ Entries are displayed one at a time and can be paged through one by one
                 self.decr_index()
             elif cmd[0] == 'e':
                 self.edit_task()
+            elif cmd[0] == 'd':
+                self.delete_task()
             elif cmd[0] == 'q':
                     self.clear_screen()
                     self.save_log()
@@ -86,7 +87,7 @@ Entries are displayed one at a time and can be paged through one by one
                     sys.exit(0)
             else:
                 print("Try Again...")
-                return self.main_loop
+                return self.main_loop()
 
     def print_screen(self):
         print(
@@ -101,12 +102,12 @@ Entries are displayed one at a time and can be paged through one by one
             )
         print('--------------------------------------------------------------')
         print(
-                "{0!s:^60} ".format("MENU :\n") +
+                "{0!s:^60} ".format(": MENU :") + "\n"
                 ": a     -  Add a new task\n"
                 ": p     -  (p)revious task\n"
                 ": e     -  (e)dit task\n"
                 ": n     -  (n)ext task\n"
-                ": s     -  (s)elect current task by number"
+                ": s     -  (s)elect current task by number\n"
                 ": q     -  (q)uit\n"
                 ": fn [term] -  Find by n where n is the search type\n"
                 "               and term is the search term.\n"
@@ -159,14 +160,19 @@ Entries are displayed one at a time and can be paged through one by one
                 task_writer.writerow(task)
 
     def add_task(self):
-        attrs = (
-                len(self.tlist) + 1,
-                self.today,
-                input("Enter task name:").strip(),
-                input("Enter time spent in minutes:").strip(),
-                input("Enter any notes:").strip()
-                )
-        self.tlist.append(map(self.fnames, attrs))
+        dic = {'id': str(len(self.tlist)+1),
+                'date': self.today,
+                'name': input("Enter task name:").strip(),
+                'duration': input("Enter time spent in minutes:").strip(),
+                'notes': input("Enter any notes:").strip()
+                }
+        self.tlist.append(dic)
+        self.slist = self.tlist[:]
+
+    def delete_task(self):
+        del self.slist[self.index]
+        del self.tlist[self.index]
+        self.index = 0
 
     def edit_task(self):
         while True:
